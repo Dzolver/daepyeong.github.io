@@ -135,6 +135,15 @@
               {saturation: 0}, {lightness: 0}
             ],
           },
+          {
+            featureType: "poi",
+            elementType: "labels.text",
+            stylers: [
+                { visibility: "simplified" },  // Simplify the visibility
+                { lightness: 50 },              // Make the text lighter
+                { weight: 0.5 }                 // Adjust the weight to make it appear smaller
+            ]
+        }
         ];
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 33.237462, lng: 126.36474 },
@@ -143,6 +152,7 @@
           scrollwheel: false,
           gestureHandling: 'none',
           zoomControl: false,
+          streetViewControl: false,
         });
 
         if (navigator.geolocation) {
@@ -343,6 +353,44 @@
         });
 
         course2Boundary.setMap(map);
+
+        // Create a custom control for Street View
+    const streetViewButtonDiv = document.createElement("div");
+    streetViewButtonDiv.style.backgroundColor = "#fff";
+    streetViewButtonDiv.style.border = "2px solid #ccc";
+    streetViewButtonDiv.style.padding = "8px";
+    streetViewButtonDiv.style.cursor = "pointer";
+    streetViewButtonDiv.style.margin = "10px";
+    streetViewButtonDiv.style.borderRadius = "4px";
+    streetViewButtonDiv.title = "Click to enter Street View";
+
+    // Create an image or icon for the button
+    const streetViewIcon = document.createElement("img");
+    streetViewIcon.src = "images/dog1.jpeg"; // Replace with your custom icon path
+    streetViewIcon.style.width = "24px";
+    streetViewIcon.style.height = "24px";
+    streetViewButtonDiv.appendChild(streetViewIcon);
+
+    // Add click event listener to the button
+    streetViewButtonDiv.addEventListener("click", () => {
+        // Set up Street View
+        const streetViewService = new google.maps.StreetViewService();
+        const panorama = new google.maps.StreetViewPanorama(document.getElementById("map"));
+        streetViewService.getPanorama(
+            { location: map.getCenter(), radius: 50 },
+            (data, status) => {
+                if (status === google.maps.StreetViewStatus.OK) {
+                    map.setStreetView(panorama);
+                    panorama.setPosition(data.location.latLng);
+                } else {
+                    alert("Street View not available at this location.");
+                }
+            }
+        );
+    });
+
+    // Add the custom button to the map
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(streetViewButtonDiv);
       }
 
       function handleLocationError(browserHasGeolocation, pos) {
@@ -368,6 +416,8 @@
           document.getElementById("map").style.height = "50vh";
         }
       });
+
+      
     </script>
   </body>
 </html>
