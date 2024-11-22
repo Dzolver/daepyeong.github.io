@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Interactive Map Webpage</title>
+    <style>
+      #map {
+        /* height: 80vh;
+        width: 100%; */
+        width: 100%;
+        height: 60vh;
+      }
+      .tagged-image {
+        position: absolute;
+        display: none;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        width: 200px;
+      }
+      header,
+      .content,
+      .footer {
+        padding: 10px;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+      @media screen and (orientation: portrait) {
+        #map {
+          height: 80vh; /* Taller map for portrait mode */
+        }
+
+        header,
+        .content,
+        .footer {
+          padding: 5px; /* Less padding to maximize space */
+        }
+      }
+
+      @media screen and (orientation: landscape) {
+        #map {
+          height: 50vh; /* Shorter map for landscape mode */
+        }
+
+        header,
+        .content,
+        .footer {
+          padding: 15px; /* More padding for landscape mode */
+        }
+      }
+      @media screen and (max-width: 768px) {
+        header {
+          display: block; /* Display header on small screens */
+        }
+        .landscape-specific {
+          display: none; /* Hide landscape-specific content in portrait */
+        }
+      }
+
+      @media screen and (min-width: 769px) and (orientation: landscape) {
+        .landscape-specific {
+          display: block; /* Show specific content for landscape */
+        }
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer {
+        font-size: 0.9em;
+      }
+
+      @media screen and (orientation: landscape) {
+        .content {
+          flex-direction: row; /* Use horizontal layout in landscape */
+        }
+        .footer {
+          font-size: 1em; /* Increase font size for landscape */
+        }
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      @media screen and (orientation: landscape) {
+        .container {
+          flex-direction: row; /* Layout switches to row in landscape */
+        }
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfA5wzWmTVWsEqba3nzxWkf8syky0vKT0"></script>
+  </head>
+  <body>
+    <h1>대평리마을 지도</h1>
+    <div id="map"></div>
+    <script>
+      let map;
+      const taggedImages = [
+        {
+          position: { lat: 33.2375, lng: 126.3645 },
+          imageUrl: "images/dog1.jpeg",
+          description: "This is a beautiful spot with scenic views.",
+        },
+        {
+          position: { lat: 33.238, lng: 126.365 },
+          imageUrl: "images/flower1.jpg",
+          description: "A historical monument that is a must-see.",
+        },
+      ];
+
+      function initMap() {
+        const mapStyles = [
+          {
+            featureType: "all",
+            elementType: "all",
+            stylers: [{ saturation: -80 }, { lightness: -60 }],
+          },
+        ];
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 33.237462, lng: 126.36474 },
+          zoom: 16,
+          styles: mapStyles,
+          scrollwheel: false,
+        });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+              new google.maps.Marker({
+                position: pos,
+                map,
+                title: "Your Location",
+                icon: "images/custom-location-icon.png",
+              });
+              map.setCenter(pos);
+            },
+            () => {
+              handleLocationError(true, map.getCenter());
+            }
+          );
+        } else {
+          handleLocationError(false, map.getCenter());
+        }
+
+        taggedImages.forEach((tag) => {
+          const marker = new google.maps.Marker({
+            position: tag.position,
+            map,
+            title: "Tagged Spot",
+            icon: tag.iconUrl,
+          });
+
+          const imgContainer = document.createElement("div");
+          imgContainer.className = "tagged-image";
+          imgContainer.innerHTML = `<img src="${tag.imageUrl}" alt="Tagged Spot" style="width: 100%;"><p>${tag.description}</p>`;
+          document.body.appendChild(imgContainer);
+
+          marker.addListener("mouseover", () => {
+            imgContainer.style.display = "block";
+            imgContainer.style.left = `${event.pageX}px`;
+            imgContainer.style.top = `${event.pageY}px`;
+          });
+
+          marker.addListener("mousemove", () => {
+            imgContainer.style.left = `${event.pageX}px`;
+            imgContainer.style.top = `${event.pageY}px`;
+          });
+
+          marker.addListener("mouseout", () => {
+            imgContainer.style.display = "none";
+          });
+        });
+        const villageBoundaryCoords = [
+          { lat: 33.24510777263302, lng: 126.3696490289237 },
+          { lat: 33.24453791572211, lng: 126.356748445148 },
+          { lat: 33.2309610416381, lng: 126.3592749479179 },
+          { lat: 33.23103960968109, lng: 126.3608591117552 },
+          { lat: 33.23158640377785, lng: 126.36984480524 },
+          { lat: 33.24510777263302, lng: 126.3696490289237 },
+        ];
+        // Define the boundary for Dapyeong-ri village
+        const dapyeongRiCourse1Coords = [
+          { lng: 126.3655063474245, lat: 33.23785937346307 },
+          { lng: 126.3653333163535, lat: 33.23670336030665 },
+          { lng: 126.3648016441471, lat: 33.23592634926426 },
+          { lng: 126.3642818883772, lat: 33.23649077627807 },
+          { lng: 126.3638806955795, lat: 33.23684533641561 },
+          { lng: 126.3640941944294, lat: 33.23732106313743 },
+          { lng: 126.3636391507992, lat: 33.23770550791649 },
+          { lng: 126.3633136137057, lat: 33.23836750131765 },
+          { lng: 126.3624732063173, lat: 33.23864077147888 },
+          { lng: 126.3621602904247, lat: 33.23865219932579 },
+          { lng: 126.3617261474924, lat: 33.23879936523269 },
+          { lng: 126.3616211466024, lat: 33.23844028396131 },
+          { lng: 126.3618004031395, lat: 33.237782146691 },
+          { lng: 126.3617248774185, lat: 33.23768759138996 },
+          { lng: 126.3617342042518, lat: 33.23756964972507 },
+          { lng: 126.3619487208253, lat: 33.23737984168067 },
+          { lng: 126.36236473522, lat: 33.23721884595334 },
+          { lng: 126.3625196395955, lat: 33.23696971092468 },
+          { lng: 126.3619849882487, lat: 33.23648751889844 },
+          { lng: 126.3620906852808, lat: 33.23621935624181 },
+          { lng: 126.3629430551067, lat: 33.23600916400375 },
+          { lng: 126.3631948165594, lat: 33.23577087774071 },
+          { lng: 126.365491925445, lat: 33.23483880393454 },
+          { lng: 126.3660783635383, lat: 33.23478772123105 },
+          { lng: 126.3673000880002, lat: 33.23472423766897 },
+          { lng: 126.3681443115836, lat: 33.2348443381913 },
+          { lng: 126.3682412743468, lat: 33.23559140382691 },
+          { lng: 126.3690975099359, lat: 33.23754455040049 },
+          { lng: 126.3692072787869, lat: 33.23808522692141 },
+          { lng: 126.3696095309524, lat: 33.23897758344973 },
+          { lng: 126.3696027020115, lat: 33.23944767881425 },
+          { lng: 126.3694099736688, lat: 33.23991613130264 },
+          { lng: 126.3692787528992, lat: 33.24031291111358 },
+          { lng: 126.3693082062113, lat: 33.24055974045616 },
+          { lng: 126.3691556100709, lat: 33.24101312936879 },
+          { lng: 126.3692281869718, lat: 33.24142066330066 },
+          { lng: 126.3690262622531, lat: 33.24195636065637 },
+          { lng: 126.3682267635427, lat: 33.2418318818978 },
+          { lng: 126.3677083931056, lat: 33.24177493457394 },
+          { lng: 126.3669515267441, lat: 33.24164906101594 },
+          { lng: 126.3666986738294, lat: 33.24129528206297 },
+          { lng: 126.3662825387555, lat: 33.24128035355027 },
+          { lng: 126.3656634517985, lat: 33.24097673160082 },
+          { lng: 126.3658907648996, lat: 33.24023412797731 },
+          { lng: 126.3657690238035, lat: 33.23975302533866 },
+          { lng: 126.3659148954059, lat: 33.23956931090996 },
+          { lng: 126.3662620875194, lat: 33.23832339588805 },
+          { lng: 126.3655063474245, lat: 33.23785937346307 },
+        ];
+
+        const dapyeongRiCourse2Coords = [
+          { lat: 33.23546956969844, lng: 126.3668523915479 },
+          { lat: 33.23775336676687, lng: 126.3663573881697 },
+          { lat: 33.23896580003731, lng: 126.3660938071887 },
+          { lat: 33.23951362684522, lng: 126.3659448232792 },
+          { lat: 33.24097607377014, lng: 126.3643981237602 },
+          { lat: 33.24135165756532, lng: 126.3643034957653 },
+          { lat: 33.24143539015655, lng: 126.3640122955649 },
+          { lat: 33.24166312267909, lng: 126.3637433521867 },
+          { lat: 33.24212246233204, lng: 126.3629675217247 },
+          { lat: 33.24301070051765, lng: 126.3622148303923 },
+          { lat: 33.24340077869019, lng: 126.3616857252153 },
+          { lat: 33.24277026124774, lng: 126.3616419944785 },
+          { lat: 33.24199426180112, lng: 126.3622091734773 },
+          { lat: 33.24175597861404, lng: 126.3627719262813 },
+          { lat: 33.24124819108312, lng: 126.3634979315169 },
+          { lat: 33.24059342253172, lng: 126.3639236604471 },
+          { lat: 33.2397563169404, lng: 126.3636176526898 },
+          { lat: 33.23925782552143, lng: 126.3635404844187 },
+          { lat: 33.23870739910468, lng: 126.3632693352042 },
+          { lat: 33.23836341533455, lng: 126.3633201373773 },
+          { lat: 33.23862789170495, lng: 126.3624810774187 },
+          { lat: 33.23864212853481, lng: 126.3621761038931 },
+          { lat: 33.23877608025255, lng: 126.3616864901718 },
+          { lat: 33.23841868842805, lng: 126.3616003432929 },
+          { lat: 33.23784673927607, lng: 126.3618106509138 },
+          { lat: 33.23766897485967, lng: 126.3616918780342 },
+          { lat: 33.23740179814385, lng: 126.3619184286948 },
+          { lat: 33.23721011284299, lng: 126.3623461503637 },
+          { lat: 33.23704415516566, lng: 126.3625197693487 },
+          { lat: 33.23690388669029, lng: 126.3624970305457 },
+          { lat: 33.23646913062763, lng: 126.3620087924662 },
+          { lat: 33.23621856334574, lng: 126.362070820477 },
+          { lat: 33.2359914431315, lng: 126.3629877350646 },
+          { lat: 33.23583638253218, lng: 126.363131909715 },
+          { lat: 33.23573080134015, lng: 126.3632812257652 },
+          { lat: 33.23559110156943, lng: 126.3628870680943 },
+          { lat: 33.23543767591042, lng: 126.3628142451769 },
+          { lat: 33.23518940530503, lng: 126.3627927823375 },
+          { lat: 33.23464782018462, lng: 126.3630569984644 },
+          { lat: 33.23459447833914, lng: 126.363181262679 },
+          { lat: 33.23432376683463, lng: 126.3633794673491 },
+          { lat: 33.23412820037398, lng: 126.3635169951326 },
+          { lat: 33.234078974752, lng: 126.3637954723923 },
+          { lat: 33.23394962111554, lng: 126.3640606911909 },
+          { lat: 33.23305095111076, lng: 126.3643186524369 },
+          { lat: 33.23254963378294, lng: 126.3648243021787 },
+          { lat: 33.23236703242646, lng: 126.3652161590026 },
+          { lat: 33.23280212156527, lng: 126.3655265003531 },
+          { lat: 33.23372440355245, lng: 126.365681951927 },
+          { lat: 33.23424827075583, lng: 126.3658872940043 },
+          { lat: 33.23477866621305, lng: 126.365977664629 },
+          { lat: 33.23474564293025, lng: 126.3671317831448 },
+          { lat: 33.23546956969844, lng: 126.3668523915479 },
+        ];
+        const villageBoundary = new google.maps.Polygon({
+          paths: villageBoundaryCoords,
+          strokeColor: "#008F8C",
+          strokeOpacity: 0,
+          strokeWeight: 5,
+          fillColor: "#FFFFFF",
+          fillOpacity: 0.2,
+        });
+
+        villageBoundary.setMap(map);
+
+        const course1Boundary = new google.maps.Polygon({
+          paths: dapyeongRiCourse1Coords,
+          strokeColor: "#008F8C",
+          strokeOpacity: 0.8,
+          strokeWeight: 5,
+          fillColor: "#000000",
+          fillOpacity: 0.0,
+        });
+
+        course1Boundary.setMap(map);
+
+        const course2Boundary = new google.maps.Polygon({
+          paths: dapyeongRiCourse2Coords,
+          strokeColor: "#FFB30D",
+          strokeOpacity: 0.8,
+          strokeWeight: 5,
+          fillColor: "#000000",
+          fillOpacity: 0.0,
+        });
+
+        course2Boundary.setMap(map);
+      }
+
+      function handleLocationError(browserHasGeolocation, pos) {
+        const infoWindow = new google.maps.InfoWindow({
+          position: pos,
+        });
+        infoWindow.setContent(
+          browserHasGeolocation
+            ? "Error: The Geolocation service failed."
+            : "Error: Your browser doesn't support geolocation."
+        );
+        infoWindow.open(map);
+      }
+
+      window.onload = initMap;
+
+      window.addEventListener("resize", () => {
+        if (window.innerHeight > window.innerWidth) {
+          // Portrait mode actions
+          document.getElementById("map").style.height = "80vh";
+        } else {
+          // Landscape mode actions
+          document.getElementById("map").style.height = "50vh";
+        }
+      });
+    </script>
+  </body>
+</html>
