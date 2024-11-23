@@ -126,6 +126,7 @@
       ];
 
       function initMap() {
+      //map styles
         const mapStyles = [
           {
             featureType: "all",
@@ -145,12 +146,13 @@
             ]
         }
         ];
+        //map settings
         map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 33.237462, lng: 126.36474 },
           zoom: 15.5,
           styles: mapStyles,
           scrollwheel: false,
-          gestureHandling: 'none',
+          //gestureHandling: 'none',
           zoomControl: false,
           streetViewControl: false,
         });
