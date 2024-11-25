@@ -112,6 +112,9 @@
     <div id="map"></div>
     <script>
       let map;
+      let streetViewIconMarker;
+      let panorama;
+
       const taggedImages = [
         {
           position: { lat: 33.2375, lng: 126.3645 },
@@ -384,12 +387,36 @@
                 if (status === google.maps.StreetViewStatus.OK) {
                     map.setStreetView(panorama);
                     panorama.setPosition(data.location.latLng);
+                    exitStreetViewButton.style.display = "block";
                 } else {
                     alert("Street View not available at this location.");
                 }
             }
         );
     });
+    
+    // Create an Exit Street View button
+    const exitStreetViewButton = document.createElement("button");
+    exitStreetViewButton.textContent = "Exit Street View";
+    exitStreetViewButton.style.position = "absolute";
+    exitStreetViewButton.style.top = "10px";
+    exitStreetViewButton.style.right = "10px";
+    exitStreetViewButton.style.padding = "10px";
+    exitStreetViewButton.style.fontSize = "14px";
+    exitStreetViewButton.style.backgroundColor = "#fff";
+    exitStreetViewButton.style.border = "2px solid #ccc";
+    exitStreetViewButton.style.cursor = "pointer";
+    exitStreetViewButton.style.borderRadius = "4px";
+    exitStreetViewButton.style.display = "none"; // Initially hidden
+
+    // Add click event to Exit Street View button
+    exitStreetViewButton.addEventListener("click", () => {
+      panorama.setVisible(false); // Hide Street View
+      exitStreetViewButton.style.display = "none"; // Hide the button
+    });
+
+    // Add the Exit Street View button to the map container
+    document.body.appendChild(exitStreetViewButton);
 
     // Add the custom button to the map
     map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(streetViewButtonDiv);
