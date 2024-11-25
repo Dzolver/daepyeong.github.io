@@ -210,6 +210,12 @@
           marker.addListener("mouseout", () => {
             imgContainer.style.display = "none";
           });
+
+          marker.addListener("touchstart",(event)=>{
+            imgContainer.style.display = imgContainer.style.display === "block" ? "none" : "block";
+            imgContainer.style.left = `${event.touches[0].pageX}px`;
+            imgContainer.style.top = `${event.touches[0].pageY}px`;
+          });
         });
         //COORDINATES AND
         const villageBoundaryCoords = [
