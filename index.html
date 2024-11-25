@@ -6,8 +6,16 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Interactive Map Webpage</title>
+    <title>대평리에서 만난 친구</title>
     <style>
+      #title1 {
+        font-size: 3em; /* Large font size for title */
+        font-weight: bold; /* Make the text bold */
+        text-align: center; /* Center-align the title */
+        margin: 20px 0; /* Add some margin above and below the title */
+        color: #333; /* Set a dark gray color */
+        font-family: Arial, sans-serif; /* Use a clean, readable font */
+      }
       #map {
         /* height: 80vh;
         width: 100%; */
@@ -108,7 +116,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCc4VrALMGwuvZSc2touhxSXDEXDR53c_k&language=ko"></script>
   </head>
   <body>
-    <h1>대평리마을 지도 ver 1.0</h1>
+    <div id="title1">대평리에서 만난 친구</div>
     <div id="map"></div>
     <script>
       let map;
