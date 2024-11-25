@@ -157,7 +157,7 @@
           scrollwheel: false,
           //gestureHandling: 'none',
           zoomControl: false,
-          streetViewControl: false,
+          streetViewControl: true,
         });
 
         if (navigator.geolocation) {
@@ -211,6 +211,7 @@
             imgContainer.style.display = "none";
           });
         });
+        //COORDINATES AND
         const villageBoundaryCoords = [
           { lat: 33.24510777263302, lng: 126.3696490289237 },
           { lat: 33.24453791572211, lng: 126.356748445148 },
@@ -270,7 +271,6 @@
           { lng: 126.3662620875194, lat: 33.23832339588805 },
           { lng: 126.3655063474245, lat: 33.23785937346307 },
         ];
-
         const dapyeongRiCourse2Coords = [
           { lat: 33.23546956969844, lng: 126.3668523915479 },
           { lat: 33.23775336676687, lng: 126.3663573881697 },
@@ -360,40 +360,40 @@
         course2Boundary.setMap(map);
 
         // Create a custom control for Street View
-    const streetViewButtonDiv = document.createElement("div");
-    streetViewButtonDiv.style.backgroundColor = "#fff";
-    streetViewButtonDiv.style.border = "2px solid #ccc";
-    streetViewButtonDiv.style.padding = "8px";
-    streetViewButtonDiv.style.cursor = "pointer";
-    streetViewButtonDiv.style.margin = "10px";
-    streetViewButtonDiv.style.borderRadius = "4px";
-    streetViewButtonDiv.title = "Click to enter Street View";
+    //const streetViewButtonDiv = document.createElement("div");
+    //streetViewButtonDiv.style.backgroundColor = "#fff";
+    //streetViewButtonDiv.style.border = "2px solid #ccc";
+    //streetViewButtonDiv.style.padding = "8px";
+    //streetViewButtonDiv.style.cursor = "pointer";
+    //streetViewButtonDiv.style.margin = "10px";
+    //streetViewButtonDiv.style.borderRadius = "4px";
+    //streetViewButtonDiv.title = "Click to enter Street View";
 
     // Create an image or icon for the button
-    const streetViewIcon = document.createElement("img");
-    streetViewIcon.src = "images/dog1.jpeg"; // Replace with your custom icon path
-    streetViewIcon.style.width = "24px";
-    streetViewIcon.style.height = "24px";
-    streetViewButtonDiv.appendChild(streetViewIcon);
+    //const streetViewIcon = document.createElement("img");
+    //streetViewIcon.src = "images/dog1.jpeg"; // Replace with your custom icon path
+    //streetViewIcon.style.width = "24px";
+   // streetViewIcon.style.height = "24px";
+    //streetViewButtonDiv.appendChild(streetViewIcon);
 
     // Add click event listener to the button
-    streetViewButtonDiv.addEventListener("click", () => {
+    //streetViewButtonDiv.addEventListener("click", () => {
         // Set up Street View
-        const streetViewService = new google.maps.StreetViewService();
-        const panorama = new google.maps.StreetViewPanorama(document.getElementById("map"));
-        streetViewService.getPanorama(
-            { location: map.getCurrentPosition, radius: 50 },
-            (data, status) => {
-                if (status === google.maps.StreetViewStatus.OK) {
-                    map.setStreetView(panorama);
-                    panorama.setPosition(data.location.latLng);
-                    exitStreetViewButton.style.display = "block";
-                } else {
-                    alert("Street View not available at this location.");
-                }
-            }
-        );
-    });
+        //const streetViewService = new google.maps.StreetViewService();
+        //const panorama = new google.maps.StreetViewPanorama(document.getElementById("map"));
+        //streetViewService.getPanorama(
+            //{ location: map.getCurrentPosition, radius: 50 },
+            //(data, status) => {
+                //if (status === google.maps.StreetViewStatus.OK) {
+                //    map.setStreetView(panorama);
+                //    panorama.setPosition(data.location.latLng);
+                 //   exitStreetViewButton.style.display = "block";
+                //} else {
+               //     alert("Street View not available at this location.");
+               // }
+           // }
+      //  );
+   // });
     
     // Create an Exit Street View button
     const exitStreetViewButton = document.createElement("button");
