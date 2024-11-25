@@ -379,7 +379,7 @@
         const streetViewService = new google.maps.StreetViewService();
         const panorama = new google.maps.StreetViewPanorama(document.getElementById("map"));
         streetViewService.getPanorama(
-            { location: map.getCenter(), radius: 50 },
+            { location: map.getCurrentPosition, radius: 50 },
             (data, status) => {
                 if (status === google.maps.StreetViewStatus.OK) {
                     map.setStreetView(panorama);
