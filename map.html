@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>대평리에서 만난 친구</title>
+    <style>
+      @font-face { font-family: Dx10Regular; src: url('fonts/dx10regular.ttf'); } 
+      #title1 {
+        font-size: 3em; /* Large font size for title */
+        font-weight: bold; /* Make the text bold */
+        text-align: center; /* Center-align the title */
+        margin: 20px 0; /* Add some margin above and below the title */
+        color: #333; /* Set a dark gray color */
+        font-family: Dx10Regular; /* Use a clean, readable font */
+      }
+      #map {
+        /* height: 80vh;
+        width: 100%; */
+        width: 100%;
+        height: 60vh;
+      }
+      .tagged-image {
+        position: absolute;
+        display: none;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        width: 200px;
+      }
+      header,
+      .content,
+      .footer {
+        padding: 10px;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+      @media screen and (orientation: portrait) {
+        #map {
+          height: 80vh; /* Taller map for portrait mode */
+        }
+
+        header,
+        .content,
+        .footer {
+          padding: 5px; /* Less padding to maximize space */
+        }
+      }
+
+      @media screen and (orientation: landscape) {
+        #map {
+          height: 50vh; /* Shorter map for landscape mode */
+        }
+
+        header,
+        .content,
+        .footer {
+          padding: 15px; /* More padding for landscape mode */
+        }
+      }
+      @media screen and (max-width: 768px) {
+        header {
+          display: block; /* Display header on small screens */
+        }
+        .landscape-specific {
+          display: none; /* Hide landscape-specific content in portrait */
+        }
+      }
+
+      @media screen and (min-width: 769px) and (orientation: landscape) {
+        .landscape-specific {
+          display: block; /* Show specific content for landscape */
+        }
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer {
+        font-size: 0.9em;
+      }
+
+      @media screen and (orientation: landscape) {
+        .content {
+          flex-direction: row; /* Use horizontal layout in landscape */
+        }
+        .footer {
+          font-size: 1em; /* Increase font size for landscape */
+        }
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      @media screen and (orientation: landscape) {
+        .container {
+          flex-direction: row; /* Layout switches to row in landscape */
+        }
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCc4VrALMGwuvZSc2touhxSXDEXDR53c_k&language=ko"></script>
+  </head>
+  <body>
+    <div id="title1">대평리에서 만난 친구</div>
+    <div id="map"></div>
+    <script>
+      let map;
+      let streetViewIconMarker;
+      let panorama;
+
+      const taggedImages = [
+        {
+          position: { lat: 33.2375, lng: 126.3645 },
+          imageUrl: "images/dog1.jpeg",
+          description: "This is a beautiful spot with scenic views.",
+        },
+        {
+          position: { lat: 33.238, lng: 126.365 },
+          imageUrl: "images/flower1.jpg",
+          description: "A historical monument that is a must-see.",
+        },
+      ];
+
+      function initMap() {
+        //map styles
+        const mapStyles = [
+          {
+            featureType: "all",
+            elementType: "all",
+            stylers: [
+              // { saturation: -80 }, { lightness: -60 }
+              { saturation: 0 },
+              { lightness: 0 },
+            ],
+          },
+          {
+            featureType: "poi",
+            elementType: "labels.text",
+            stylers: [
+              { visibility: "simplified" }, // Simplify the visibility
+              { lightness: 30 }, // Make the text lighter
+              { weight: 0.2 }, // Adjust the weight to make it appear smaller
+            ],
+          },
+        ];
+        //map settings
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 33.237462, lng: 126.36474 },
+          zoom: 15.5,
+          styles: mapStyles,
+          scrollwheel: false,
+          //gestureHandling: 'none',
+          zoomControl: false,
+          streetViewControl: true,
+        });
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+              new google.maps.Marker({
+                position: pos,
+                map,
+                title: "Your Location",
+                icon: "images/custom-location-icon.png",
+              });
+              map.setCenter(pos);
+            },
+            () => {
+              handleLocationError(true, map.getCenter());
+            }
+          );
+        } else {
+          handleLocationError(false, map.getCenter());
+        }
+
+        taggedImages.forEach((tag) => {
+          const marker = new google.maps.Marker({
+            position: tag.position,
+            map,
+            title: "Tagged Spot",
+            icon: tag.iconUrl,
+          });
+
+          const imgContainer = document.createElement("div");
+          imgContainer.className = "tagged-image";
+          imgContainer.innerHTML = `<img src="${tag.imageUrl}" alt="Tagged Spot" style="width: 100%;"><p>${tag.description}</p>`;
+          document.body.appendChild(imgContainer);
+
+          marker.addListener("mouseover", () => {
+            imgContainer.style.display = "block";
+            imgContainer.style.left = `${event.pageX}px`;
+            imgContainer.style.top = `${event.pageY}px`;
+          });
+
+          marker.addListener("mousemove", () => {
+            imgContainer.style.left = `${event.pageX}px`;
+            imgContainer.style.top = `${event.pageY}px`;
+          });
+
+          marker.addListener("mouseout", () => {
+            imgContainer.style.display = "none";
+          });
+
+          marker.addListener("touchstart", (event) => {
+            imgContainer.style.display =
+              imgContainer.style.display === "block" ? "none" : "block";
+            imgContainer.style.left = `${event.touches[0].pageX}px`;
+            imgContainer.style.top = `${event.touches[0].pageY}px`;
+          });
+        });
+        //COORDINATES AND
+        const villageBoundaryCoords = [
+          { lat: 33.24510777263302, lng: 126.3696490289237 },
+          { lat: 33.24453791572211, lng: 126.356748445148 },
+          { lat: 33.2309610416381, lng: 126.3592749479179 },
+          { lat: 33.23103960968109, lng: 126.3608591117552 },
+          { lat: 33.23158640377785, lng: 126.36984480524 },
+          { lat: 33.24510777263302, lng: 126.3696490289237 },
+        ];
+        // Define the boundary for Dapyeong-ri village
+        const dapyeongRiCourse1Coords = [
+          { lat: 33.23736902210829, lng: 126.3663912575017 },
+          { lat: 33.23507761472436, lng: 126.3669731965008 },
+          { lat: 33.23474274401865, lng: 126.3671680008536 },
+          { lat: 33.23474380751903, lng: 126.3667786014066 },
+          { lat: 33.23478096708612, lng: 126.3660210635685 },
+          { lat: 33.23485202409728, lng: 126.3655467412338 },
+          { lat: 33.23442405400124, lng: 126.3652723444934 },
+          { lat: 33.23432944796007, lng: 126.3649563919287 },
+          { lat: 33.23423263346756, lng: 126.3649007793128 },
+          { lat: 33.23396394109033, lng: 126.3640873946756 },
+          { lat: 33.23418890819816, lng: 126.3634532875053 },
+          { lat: 33.23452099740178, lng: 126.3632894089989 },
+          { lat: 33.23460257111216, lng: 126.3630842935123 },
+          { lat: 33.2349932363914, lng: 126.3628528372277 },
+          { lat: 33.23529942209831, lng: 126.3627889646817 },
+          { lat: 33.23556347631395, lng: 126.3628584903325 },
+          { lat: 33.23541814750028, lng: 126.3624157668149 },
+          { lat: 33.23553699264414, lng: 126.3626736445836 },
+          { lat: 33.23561880230967, lng: 126.3629991932019 },
+          { lat: 33.23573895894582, lng: 126.363251091357 },
+          { lat: 33.23609851747484, lng: 126.363347429332 },
+          { lat: 33.23641688777704, lng: 126.3635684124541 },
+          { lat: 33.23685969236463, lng: 126.363912932321 },
+          { lat: 33.23635991005904, lng: 126.3644160495336 },
+          { lat: 33.23592882272027, lng: 126.3647884362457 },
+          { lat: 33.23633447396892, lng: 126.3650350498283 },
+          { lat: 33.23670621863474, lng: 126.3653482549842 },
+          { lat: 33.23783215854266, lng: 126.3654870071363 },
+          { lat: 33.23822894810425, lng: 126.3660660379801 },
+          { lat: 33.23835960515015, lng: 126.3664891742019 },
+          { lat: 33.23839667145271, lng: 126.3671695534887 },
+          { lat: 33.23834256315651, lng: 126.3675920699562 },
+          { lat: 33.23829990424739, lng: 126.3680491907026 },
+          { lat: 33.23818691979845, lng: 126.3686509942102 },
+          { lat: 33.23803077285927, lng: 126.3691791157784 },
+          { lat: 33.23813504918963, lng: 126.369241811485 },
+          { lat: 33.23904290082803, lng: 126.3696417757622 },
+          { lat: 33.23977478873302, lng: 126.3695034634247 },
+          { lat: 33.23998635807705, lng: 126.369350635052 },
+          { lat: 33.24041700269138, lng: 126.3692554460953 },
+          { lat: 33.24054749420579, lng: 126.3693262672535 },
+          { lat: 33.24101714041588, lng: 126.3691443872524 },
+          { lat: 33.24138284600148, lng: 126.3692394369278 },
+          { lat: 33.24193611792536, lng: 126.3690372429805 },
+          { lat: 33.24184468183135, lng: 126.3682494492728 },
+          { lat: 33.24174924512756, lng: 126.3679216023228 },
+          { lat: 33.24177462580273, lng: 126.36766410929 },
+          { lat: 33.24166891500852, lng: 126.3669763681337 },
+          { lat: 33.24129558215108, lng: 126.3667231550241 },
+          { lat: 33.24124348236089, lng: 126.3662078245323 },
+          { lat: 33.24094316745062, lng: 126.3656411867394 },
+          { lat: 33.24021799120662, lng: 126.3658832523095 },
+          { lat: 33.23970351605726, lng: 126.3657671350473 },
+          { lat: 33.23934223599852, lng: 126.3660199003512 },
+          { lat: 33.23830716554418, lng: 126.3662597425165 },
+          { lat: 33.23736902210829, lng: 126.3663912575017 },
+        ];
+        const dapyeongRiCourse2Coords = [
+          { lat: 33.23546956969844, lng: 126.3668523915479 },
+          { lat: 33.23775336676687, lng: 126.3663573881697 },
+          { lat: 33.23896580003731, lng: 126.3660938071887 },
+          { lat: 33.23951362684522, lng: 126.3659448232792 },
+          { lat: 33.24097607377014, lng: 126.3643981237602 },
+          { lat: 33.24135165756532, lng: 126.3643034957653 },
+          { lat: 33.24143539015655, lng: 126.3640122955649 },
+          { lat: 33.24166312267909, lng: 126.3637433521867 },
+          { lat: 33.24212246233204, lng: 126.3629675217247 },
+          { lat: 33.24301070051765, lng: 126.3622148303923 },
+          { lat: 33.24340077869019, lng: 126.3616857252153 },
+          { lat: 33.24277026124774, lng: 126.3616419944785 },
+          { lat: 33.24199426180112, lng: 126.3622091734773 },
+          { lat: 33.24175597861404, lng: 126.3627719262813 },
+          { lat: 33.24124819108312, lng: 126.3634979315169 },
+          { lat: 33.24059342253172, lng: 126.3639236604471 },
+          { lat: 33.2397563169404, lng: 126.3636176526898 },
+          { lat: 33.23925782552143, lng: 126.3635404844187 },
+          { lat: 33.23870739910468, lng: 126.3632693352042 },
+          { lat: 33.23836341533455, lng: 126.3633201373773 },
+          { lat: 33.23862789170495, lng: 126.3624810774187 },
+          { lat: 33.23864212853481, lng: 126.3621761038931 },
+          { lat: 33.23877608025255, lng: 126.3616864901718 },
+          { lat: 33.23841868842805, lng: 126.3616003432929 },
+          { lat: 33.23784673927607, lng: 126.3618106509138 },
+          { lat: 33.23766897485967, lng: 126.3616918780342 },
+          { lat: 33.23740179814385, lng: 126.3619184286948 },
+          { lat: 33.23721011284299, lng: 126.3623461503637 },
+          { lat: 33.23704415516566, lng: 126.3625197693487 },
+          { lat: 33.23690388669029, lng: 126.3624970305457 },
+          { lat: 33.23646913062763, lng: 126.3620087924662 },
+          { lat: 33.23621856334574, lng: 126.362070820477 },
+          { lat: 33.2359914431315, lng: 126.3629877350646 },
+          { lat: 33.23583638253218, lng: 126.363131909715 },
+          { lat: 33.23573080134015, lng: 126.3632812257652 },
+          { lat: 33.23559110156943, lng: 126.3628870680943 },
+          { lat: 33.23543767591042, lng: 126.3628142451769 },
+          { lat: 33.23518940530503, lng: 126.3627927823375 },
+          { lat: 33.23464782018462, lng: 126.3630569984644 },
+          { lat: 33.23459447833914, lng: 126.363181262679 },
+          { lat: 33.23432376683463, lng: 126.3633794673491 },
+          { lat: 33.23412820037398, lng: 126.3635169951326 },
+          { lat: 33.234078974752, lng: 126.3637954723923 },
+          { lat: 33.23394962111554, lng: 126.3640606911909 },
+          { lat: 33.23305095111076, lng: 126.3643186524369 },
+          { lat: 33.23254963378294, lng: 126.3648243021787 },
+          { lat: 33.23236703242646, lng: 126.3652161590026 },
+          { lat: 33.23280212156527, lng: 126.3655265003531 },
+          { lat: 33.23372440355245, lng: 126.365681951927 },
+          { lat: 33.23424827075583, lng: 126.3658872940043 },
+          { lat: 33.23477866621305, lng: 126.365977664629 },
+          { lat: 33.23474564293025, lng: 126.3671317831448 },
+          { lat: 33.23546956969844, lng: 126.3668523915479 },
+        ];
+        const villageBoundary = new google.maps.Polygon({
+          paths: villageBoundaryCoords,
+          strokeColor: "#008F8C",
+          strokeOpacity: 0,
+          strokeWeight: 5,
+          fillColor: "#FFFFFF",
+          fillOpacity: 0.0,
+        });
+
+        villageBoundary.setMap(map);
+
+        const course1Boundary = new google.maps.Polygon({
+          paths: dapyeongRiCourse1Coords,
+          strokeColor: "#008F8C",
+          strokeOpacity: 0.8,
+          strokeWeight: 5,
+          fillColor: "#000000",
+          fillOpacity: 0.0,
+        });
+
+        course1Boundary.setMap(map);
+
+        const course2Boundary = new google.maps.Polygon({
+          paths: dapyeongRiCourse2Coords,
+          strokeColor: "#FFB30D",
+          strokeOpacity: 0.8,
+          strokeWeight: 5,
+          fillColor: "#000000",
+          fillOpacity: 0.0,
+        });
+
+        //course2Boundary.setMap(map);
+
+        // Create a custom control for Street View
+        //const streetViewButtonDiv = document.createElement("div");
+        //streetViewButtonDiv.style.backgroundColor = "#fff";
+        //streetViewButtonDiv.style.border = "2px solid #ccc";
+        //streetViewButtonDiv.style.padding = "8px";
+        //streetViewButtonDiv.style.cursor = "pointer";
+        //streetViewButtonDiv.style.margin = "10px";
+        //streetViewButtonDiv.style.borderRadius = "4px";
+        //streetViewButtonDiv.title = "Click to enter Street View";
+
+        // Create an image or icon for the button
+        //const streetViewIcon = document.createElement("img");
+        //streetViewIcon.src = "images/dog1.jpeg"; // Replace with your custom icon path
+        //streetViewIcon.style.width = "24px";
+        // streetViewIcon.style.height = "24px";
+        //streetViewButtonDiv.appendChild(streetViewIcon);
+
+        // Add click event listener to the button
+        //streetViewButtonDiv.addEventListener("click", () => {
+        // Set up Street View
+        //const streetViewService = new google.maps.StreetViewService();
+        //const panorama = new google.maps.StreetViewPanorama(document.getElementById("map"));
+        //streetViewService.getPanorama(
+        //{ location: map.getCurrentPosition, radius: 50 },
+        //(data, status) => {
+        //if (status === google.maps.StreetViewStatus.OK) {
+        //    map.setStreetView(panorama);
+        //    panorama.setPosition(data.location.latLng);
+        //   exitStreetViewButton.style.display = "block";
+        //} else {
+        //     alert("Street View not available at this location.");
+        // }
+        // }
+        //  );
+        // });
+
+        // Create an Exit Street View button
+        const exitStreetViewButton = document.createElement("button");
+        exitStreetViewButton.textContent = "Exit Street View";
+        exitStreetViewButton.style.position = "absolute";
+        exitStreetViewButton.style.top = "10px";
+        exitStreetViewButton.style.right = "10px";
+        exitStreetViewButton.style.padding = "10px";
+        exitStreetViewButton.style.fontSize = "14px";
+        exitStreetViewButton.style.backgroundColor = "#fff";
+        exitStreetViewButton.style.border = "2px solid #ccc";
+        exitStreetViewButton.style.cursor = "pointer";
+        exitStreetViewButton.style.borderRadius = "4px";
+        exitStreetViewButton.style.display = "none"; // Initially hidden
+
+        // Add click event to Exit Street View button
+        exitStreetViewButton.addEventListener("click", () => {
+          panorama.setVisible(false); // Hide Street View
+          exitStreetViewButton.style.display = "none"; // Hide the button
+        });
+
+        // Add the Exit Street View button to the map container
+        document.body.appendChild(exitStreetViewButton);
+
+        // Add the custom button to the map
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
+          streetViewButtonDiv
+        );
+      }
+
+      function handleLocationError(browserHasGeolocation, pos) {
+        const infoWindow = new google.maps.InfoWindow({
+          position: pos,
+        });
+        infoWindow.setContent(
+          browserHasGeolocation
+            ? "Error: The Geolocation service failed."
+            : "Error: Your browser doesn't support geolocation."
+        );
+        infoWindow.open(map);
+      }
+
+      window.onload = initMap;
+
+      window.addEventListener("resize", () => {
+        if (window.innerHeight > window.innerWidth) {
+          // Portrait mode actions
+          document.getElementById("map").style.height = "80vh";
+        } else {
+          // Landscape mode actions
+          document.getElementById("map").style.height = "50vh";
+        }
+      });
+    </script>
+  </body>
+</html>
