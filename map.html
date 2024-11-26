@@ -139,6 +139,8 @@
       let map;
       let streetViewIconMarker;
       let panorama;
+      let userMarker;
+      let watchID;
 
       const taggedImages = [
         {
@@ -186,6 +188,7 @@
           streetViewControl: true,
         });
 
+        //current position handling
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -197,7 +200,6 @@
                 position: pos,
                 map,
                 title: "Your Location",
-                icon: "images/custom-location-icon.png",
               });
               map.setCenter(pos);
             },
@@ -209,7 +211,36 @@
           handleLocationError(false, map.getCenter());
         }
 
-        taggedImages.forEach((tag) => {
+        //watch current position
+        if (navigator.geolocation) {
+          watchID = navigator.geolocation.watchPosition(
+            (position) => {
+              const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+
+              if (!userMarker) {
+                userMarker = new google.maps.Marker({
+                  position: pos,
+                  map,
+                  title: "Your Location",
+                });
+              } else {
+                userMarker.setPosition(pos);
+              }
+
+              map.setCenter(pos);
+            },
+            () => {
+              handleLocationError(true, map.getCenter());
+            }
+          );
+        } else {
+          handleLocationError(false, map.getCenter());
+        }
+
+        /*taggedImages.forEach((tag) => {
           const marker = new google.maps.Marker({
             position: tag.position,
             map,
@@ -244,6 +275,7 @@
             imgContainer.style.top = `${event.touches[0].pageY}px`;
           });
         });
+        */
         //COORDINATES AND
         const villageBoundaryCoords = [
           { lat: 33.24510777263302, lng: 126.3696490289237 },
