@@ -8,7 +8,22 @@
     />
     <title>대평리에서 만난 친구</title>
     <style>
-      @font-face { font-family: Dx10Regular; src: url('fonts/dx10regular.ttf'); } 
+      .button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #54cc58;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        text-decoration: none;
+      }
+
+      @font-face {
+        font-family: Dx10Regular;
+        src: url("fonts/dx10regular.ttf");
+      }
       #title1 {
         font-size: 3em; /* Large font size for title */
         font-weight: bold; /* Make the text bold */
@@ -118,6 +133,7 @@
   </head>
   <body>
     <div id="title1">대평리에서 만난 친구</div>
+    <a href="index.html" class="button">돌아가기</a>
     <div id="map"></div>
     <script>
       let map;
